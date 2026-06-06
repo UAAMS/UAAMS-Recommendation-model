@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-MODEL_PATH = r'C:\Users\user\Documents\UAAMS\UAAMS-Recommendation-model\models\program_recommender_id.pkl'
+MODEL_PATH = '../models/program_recommender_id.pkl'
 
 def load_model():
     """Load the pickled model"""
