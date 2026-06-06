@@ -3,11 +3,15 @@ from flask_cors import CORS
 import pickle
 import numpy as np
 import os
+import sys
 
 app = Flask(__name__)
 CORS(app)
 
-MODEL_PATH = '../models/program_recommender_id.pkl'
+
+# Get the absolute path to the directory where this file lives
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'program_recommender_id.pkl')
 
 def load_model():
     """Load the pickled model"""
