@@ -31,10 +31,47 @@ MODEL = None
 IS_TRAINING = False
 TRAINING_LOCK = threading.Lock()
 
+# Add this function before load_model()
+def train_initial_model_if_needed():
+    """Train initial model if no model exists"""
+    global MODEL
+    
+    if not os.path.exists(MODEL_PATH):
+        print("🔨 No model found. Training initial model...")
+        try:
+            # Import training function
+            from train_model_id import train_model
+            success = train_model(EXCEL_PATH, MODEL_PATH)
+            if success:
+                MODEL = load_model()
+                print("✅ Initial model trained successfully!")
+                return True
+            else:
+                print("❌ Failed to train initial model")
+                return False
+        except Exception as e:
+            print(f"❌ Error training initial model: {e}")
+            return False
+    return True
+
+# Replace load_model() call with:
 def load_model():
     """Load the pickled model"""
     global MODEL
     try:
+        # First try to train if model doesn't exist
+        if not os.path.exists(MODEL_PATH):
+            print("🔨 No model found. Attempting to train...")
+            try:
+                # Import and run training
+                import subprocess
+                subprocess.run(['python', 'train_model_id.py'], check=True)
+                print("✅ Training completed successfully!")
+            except Exception as e:
+                print(f"❌ Training failed: {e}")
+                MODEL = None
+                return None
+        
         with open(MODEL_PATH, 'rb') as f:
             MODEL = pickle.load(f)
         print(f"✅ Model loaded successfully!")
