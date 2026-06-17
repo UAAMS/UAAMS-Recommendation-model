@@ -58,30 +58,25 @@ def train_initial_model_if_needed():
 def load_model():
     """Load the pickled model"""
     global MODEL
-    try:
-        # First try to train if model doesn't exist
-        if not os.path.exists(MODEL_PATH):
-            print("🔨 No model found. Attempting to train...")
-            try:
-                # Import and run training
-                import subprocess
-                subprocess.run(['python', 'train_model_id.py'], check=True)
-                print("✅ Training completed successfully!")
-            except Exception as e:
-                print(f"❌ Training failed: {e}")
-                MODEL = None
-                return None
-        
-        with open(MODEL_PATH, 'rb') as f:
-            MODEL = pickle.load(f)
-        print(f"✅ Model loaded successfully!")
-        print(f"📊 Loaded {MODEL['metadata']['total_programs']} programs")
-        return MODEL
-    except Exception as e:
-        print(f"❌ Error loading model: {e}")
+    
+    # Check if model exists
+    if os.path.exists(MODEL_PATH):
+        try:
+            with open(MODEL_PATH, 'rb') as f:
+                MODEL = pickle.load(f)
+            print(f"✅ Model loaded successfully!")
+            print(f"📊 Loaded {MODEL['metadata']['total_programs']} programs")
+            return MODEL
+        except Exception as e:
+            print(f"❌ Error loading model: {e}")
+            MODEL = None
+            return None
+    else:
+        print(f"⚠️  Model file not found at: {MODEL_PATH}")
+        print("📝 You need to train the model first!")
+        print("💡 Run: python train_model_id.py")
         MODEL = None
         return None
-
 def extract_weights(formula):
     """Extract matric, inter, and test weights from formula string"""
     if pd.isna(formula):
