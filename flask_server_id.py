@@ -5,71 +5,7 @@ import numpy as np
 import os
 import sys
 import pandas as pd
-import jsondef load_model():
-    """Load the pickled model, or train if it doesn't exist"""
-    global MODEL
-    
-    # Check if model exists
-    if os.path.exists(MODEL_PATH):
-        try:
-            with open(MODEL_PATH, 'rb') as f:
-                MODEL = pickle.load(f)
-            print(f"✅ Model loaded successfully!")
-            print(f"📊 Loaded {MODEL['metadata']['total_programs']} programs")
-            return MODEL
-        except Exception as e:
-            print(f"❌ Error loading model: {e}")
-            MODEL = None
-            return None
-    else:
-        print(f"⚠️  Model file not found at: {MODEL_PATH}")
-        
-        # Check if Excel file exists
-        if os.path.exists(EXCEL_PATH):
-            print(f"📂 Found Excel file at: {EXCEL_PATH}")
-            print("🔨 Attempting to train model...")
-            
-            try:
-                # Import training function
-                import importlib.util
-                train_script = os.path.join(BASE_DIR, 'train_model_id.py')
-                
-                if os.path.exists(train_script):
-                    # Import the training module
-                    spec = importlib.util.spec_from_file_location("train_model_id", train_script)
-                    train_module = importlib.util.module_from_spec(spec)
-                    spec.loader.exec_module(train_module)
-                    
-                    # Train the model
-                    success = train_module.train_model(EXCEL_PATH, MODEL_PATH)
-                    
-                    if success:
-                        # Load the trained model
-                        with open(MODEL_PATH, 'rb') as f:
-                            MODEL = pickle.load(f)
-                        print(f"✅ Model trained and loaded successfully!")
-                        print(f"📊 Loaded {MODEL['metadata']['total_programs']} programs")
-                        return MODEL
-                    else:
-                        print("❌ Training failed!")
-                        MODEL = None
-                        return None
-                else:
-                    print(f"❌ Training script not found at: {train_script}")
-                    MODEL = None
-                    return None
-                    
-            except Exception as e:
-                print(f"❌ Error during training: {e}")
-                MODEL = None
-                return None
-        else:
-            print(f"❌ Excel file not found at: {EXCEL_PATH}")
-            print("📝 Please ensure both files exist:")
-            print(f"   1. Excel data: {EXCEL_PATH}")
-            print(f"   2. Training script: {os.path.join(BASE_DIR, 'train_model_id.py')}")
-            MODEL = None
-            return None
+import json
 from datetime import datetime
 import threading
 import shutil
@@ -95,30 +31,6 @@ MODEL = None
 IS_TRAINING = False
 TRAINING_LOCK = threading.Lock()
 
-# Add this function before load_model()
-def train_initial_model_if_needed():
-    """Train initial model if no model exists"""
-    global MODEL
-    
-    if not os.path.exists(MODEL_PATH):
-        print("🔨 No model found. Training initial model...")
-        try:
-            # Import training function
-            from train_model_id import train_model
-            success = train_model(EXCEL_PATH, MODEL_PATH)
-            if success:
-                MODEL = load_model()
-                print("✅ Initial model trained successfully!")
-                return True
-            else:
-                print("❌ Failed to train initial model")
-                return False
-        except Exception as e:
-            print(f"❌ Error training initial model: {e}")
-            return False
-    return True
-
-# Replace load_model() call with:
 def load_model():
     """Load the pickled model, or train if it doesn't exist"""
     global MODEL
@@ -184,6 +96,7 @@ def load_model():
             print(f"   2. Training script: {os.path.join(BASE_DIR, 'train_model_id.py')}")
             MODEL = None
             return None
+
 def extract_weights(formula):
     """Extract matric, inter, and test weights from formula string"""
     if pd.isna(formula):
