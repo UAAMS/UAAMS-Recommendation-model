@@ -52,16 +52,16 @@ def calculate_weighted_score_needed(aggr, w_matric, w_fsc, w_test, assumed_test_
 
 def load_excel_data(excel_path):
     """Load both sheets from Excel file and use Sheet 2 which has CAMPUS and PROGRAM columns"""
-    print(f"📂 Loading Excel file from {excel_path}...")
+    print(f"Loading Excel file from {excel_path}...")
     
     try:
         # Try to load Sheet 2 first (has CAMPUS and PROGRAM columns)
         df = pd.read_excel(excel_path, sheet_name='data (2)')
-        print(f"✅ Loaded Sheet 'data (2)' with {len(df)} records")
+        print(f"Loaded Sheet 'data (2)' with {len(df)} records")
     except:
         # Fall back to Sheet 1
         df = pd.read_excel(excel_path, sheet_name='data')
-        print(f"✅ Loaded Sheet 'data' with {len(df)} records")
+        print(f"Loaded Sheet 'data' with {len(df)} records")
     
     # Clean data
     df = df.dropna(subset=['AGGR', 'CAMPUS|PROGRAM'])
@@ -71,24 +71,24 @@ def load_excel_data(excel_path):
     # Ensure required columns exist
     if 'MONGO_ID' not in df.columns:
         df['MONGO_ID'] = None
-        print("⚠️  MONGO_ID column not found, setting to None")
+        print("MONGO_ID column not found, setting to None")
     
     if 'UNIVERSITY_ID' not in df.columns:
         df['UNIVERSITY_ID'] = None
-        print("⚠️  UNIVERSITY_ID column not found, setting to None")
+        print("UNIVERSITY_ID column not found, setting to None")
     
     if 'CAMPUS' not in df.columns:
         # Try to extract campus from CAMPUS|PROGRAM if not available
         df['CAMPUS'] = df['CAMPUS|PROGRAM'].apply(lambda x: x.split('|')[0] if '|' in str(x) else None)
-        print("✅ Created CAMPUS column from CAMPUS|PROGRAM")
+        print("Created CAMPUS column from CAMPUS|PROGRAM")
     
     if 'PROGRAM' not in df.columns:
         # Try to extract program from CAMPUS|PROGRAM if not available
         df['PROGRAM'] = df['CAMPUS|PROGRAM'].apply(lambda x: x.split('|')[1] if '|' in str(x) else None)
-        print("✅ Created PROGRAM column from CAMPUS|PROGRAM")
+        print("Created PROGRAM column from CAMPUS|PROGRAM")
     
-    print(f"✅ Total valid programs: {len(df)}")
-    print(f"📊 Columns available: {list(df.columns)}")
+    print(f"Total valid programs: {len(df)}")
+    print(f"Columns available: {list(df.columns)}")
     
     return df
 
@@ -103,7 +103,7 @@ def train_model(excel_path='/home/zar/program_recommender/data/Book1(1).xlsx',
     
     # Check if Excel file exists
     if not os.path.exists(excel_path):
-        print(f"❌ Excel file not found at {excel_path}")
+        print(f"Excel file not found at {excel_path}")
         print("Please ensure the file is in the correct location")
         return False
     
@@ -111,11 +111,11 @@ def train_model(excel_path='/home/zar/program_recommender/data/Book1(1).xlsx',
     df = load_excel_data(excel_path)
     
     # Extract weights from formulas
-    print("\n🔍 Extracting formula weights...")
+    print("\nExtracting formula weights...")
     df['W_Matric'], df['W_FSc'], df['W_Test'] = zip(*df['FORMULA'].apply(extract_weights))
     
     # Calculate weighted score needed for each program
-    print("📊 Calculating weighted scores (60% FSc + 40% Matric)...")
+    print("Calculating weighted scores (60% FSc + 40% Matric)...")
     np.random.seed(42)  # For reproducibility
     df['Weighted_Score_Needed'] = df.apply(
         lambda row: calculate_weighted_score_needed(
@@ -166,39 +166,39 @@ def train_model(excel_path='/home/zar/program_recommender/data/Book1(1).xlsx',
     with open(model_path, 'wb') as f:
         pickle.dump(model_data, f)
     
-    print(f"\n✅ Model saved to {model_path}")
-    print(f"📊 Model contains {len(df)} programs")
+    print(f"\nModel saved to {model_path}")
+    print(f"Model contains {len(df)} programs")
     
     # Show ID statistics
-    print(f"\n🆔 ID Statistics:")
+    print(f"\nID Statistics:")
     print(f"   Programs with MongoDB ID: {len(df) - programs_without_ids}")
     print(f"   Programs without MongoDB ID: {programs_without_ids}")
     
     # Show weighted score statistics
-    print(f"\n📊 Weighted Score Statistics:")
+    print(f"\nWeighted Score Statistics:")
     print(f"   Minimum needed: {df['Weighted_Score_Needed'].min():.2f}%")
     print(f"   Maximum needed: {df['Weighted_Score_Needed'].max():.2f}%")
     print(f"   Average needed: {df['Weighted_Score_Needed'].mean():.2f}%")
     print(f"   Standard deviation: {df['Weighted_Score_Needed'].std():.2f}%")
     
     # Show closing merit statistics
-    print(f"\n🏆 Closing Merit Statistics:")
+    print(f"\nClosing Merit Statistics:")
     print(f"   Minimum: {df['AGGR'].min():.2f}%")
     print(f"   Maximum: {df['AGGR'].max():.2f}%")
     print(f"   Average: {df['AGGR'].mean():.2f}%")
     
     # Show sample of programs with MongoDB IDs
-    print("\n📋 Sample programs (with MongoDB IDs):")
+    print("\nSample programs (with MongoDB IDs):")
     sample_df = df[df['MONGO_ID'].notna()].head(10)
     if len(sample_df) > 0:
         print(sample_df[['CAMPUS|PROGRAM', 'AGGR', 'Weighted_Score_Needed', 'MONGO_ID', 'UNIVERSITY_ID']].to_string(index=False))
     else:
-        print("⚠️  No programs found with MongoDB IDs in the dataset")
+        print("No programs found with MongoDB IDs in the dataset")
         print("Showing sample without IDs:")
         print(df[['CAMPUS|PROGRAM', 'AGGR', 'Weighted_Score_Needed']].head(10).to_string(index=False))
     
     # Additional validation
-    print("\n🔍 Data Validation:")
+    print("\nData Validation:")
     print(f"   Programs with valid weighted scores: {(df['Weighted_Score_Needed'] > 0).sum()}")
     print(f"   Programs with formulas: {df['FORMULA'].notna().sum()}")
     print(f"   Programs with source links: {df['SOURCE_LINK'].notna().sum()}")
@@ -208,10 +208,10 @@ def train_model(excel_path='/home/zar/program_recommender/data/Book1(1).xlsx',
 if __name__ == "__main__":
     success = train_model()
     if success:
-        print("\n🎉 Training completed successfully!")
-        print("\n💡 Next steps:")
+        print("\nTraining completed successfully!")
+        print("\nNext steps:")
         print("   1. Run: python flask_server.py")
         print("   2. Test: python test_api.py")
         print("   3. API will return both mongo_id and university_id")
     else:
-        print("\n❌ Training failed! Please check the error messages above.")
+        print("\nTraining failed! Please check the error messages above.")
